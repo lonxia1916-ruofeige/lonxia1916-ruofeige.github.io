@@ -1,0 +1,43 @@
+{
+  "exportedAt": "2026-10-05 18:40:03",
+  "status": "使用中",
+  "total": 86,
+  "classes": [
+    {
+      "name": "示例班级",
+      "count": 2
+    },
+    {
+      "name": "Star秋季班",
+      "count": 12
+    },
+    {
+      "name": "Fish班2024",
+      "count": 15
+    },
+    {
+      "name": "Micky2022",
+      "count": 13
+    },
+    {
+      "name": "London",
+      "count": 12
+    },
+    {
+      "name": "自主学习群",
+      "count": 2
+    },
+    {
+      "name": "未填写",
+      "count": 1
+    },
+    {
+      "name": "Bunny春季班",
+      "count": 15
+    },
+    {
+      "name": "Panda",
+      "count": 14
+    }
+  ]
+}
