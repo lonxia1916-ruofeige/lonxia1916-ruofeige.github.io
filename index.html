@@ -294,9 +294,9 @@ table.tbl{width:100%; border-collapse:collapse; table-layout:fixed}
       <section class="view active" id="view-home">
         <div class="view-title">若菲格教学工作台</div><div class="card" style="margin-bottom:16px">
 <h3>原版阅读 · 进行中任务</h3>
-<p style="margin:10px 0">数据日期：2026-10-05 · 17项进行中 · 8项详情已核实（25条记录），9项详情尚未读取。</p>
-<p style="color:var(--muted)">当前为数据快照。今天尚未结束，未打卡不直接等于逾期；打卡率不等于阅读理解能力。</p>
-<a class="pro-link" style="margin-top:12px" href="#students" data-nav="students">查看17项阅读任务与复制提醒</a>
+<p id="readingHomeSummary" style="margin:10px 0"></p>
+<p id="readingSnapshotNote" style="color:var(--muted)"></p>
+<a class="pro-link" style="margin-top:12px" href="#students" data-nav="students" id="readingGoTasks">查看阅读任务与复制提醒</a>
 </div><div class="card" style="margin-bottom:16px">
 <h3>IB 教学知识库</h3>
 <p style="margin:10px 0">来源：IB_teacher_knowledge.md.txt（用户提供）。详细方案由主讲老师沟通确认；学情分析和规划初稿须经主讲老师审核修订。</p>
@@ -380,9 +380,9 @@ table.tbl{width:100%; border-collapse:collapse; table-layout:fixed}
 <a class="row-op" href="https://school.lingshi.com/" target="_blank" rel="noopener noreferrer">打开学员后台</a>
 <p id="copyStatus" role="status"></p>
 </div>
-        <div class="view-desc">教学知识库与管理入口。<span class="sample-note">阅读任务快照已更新：2026-10-05；平台热点尚未接入</span></div>
+        <div class="view-desc">教学知识库与管理入口。<span class="sample-note" id="readingDataNote"></span></div>
 
-        <div class="card" style="margin-bottom:16px">阅读任务数据来源：用户导出及本次后台读取。尚未建立持续自动同步。</div><div class="grid-2">
+        <div class="card" style="margin-bottom:16px">阅读任务计划每小时同步，需本地应用运行且平台登录有效。网页每60秒检查最近成功数据。</div><div class="grid-2">
           <div class="card">
             <div class="card-head"><h3>近 7 日学习时长趋势 <span class="tag">示例</span></h3><button class="more" data-demo>接入真实数据<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></button></div>
             <div id="chartTrend" class="chart-box"></div>
@@ -396,7 +396,7 @@ table.tbl{width:100%; border-collapse:collapse; table-layout:fixed}
         <div class="grid-2">
           <div class="card">
             <div class="card-head"><h3>最新学习动态 <span class="tag">示例</span></h3><button class="more" data-nav="students">去学员管理</button></div>
-            <div class="feed">已核实记录中，排除今天新开始的任务后，9条累计打卡为零，2条打卡率100%但完成度75%。请在后台核对具体提交情况。</div></div><div class="card">
+            <div class="feed" id="readingFeedCurrent"></div></div><div class="card">
             <div class="card-head"><h3>热点速览 <span class="tag">示例</span></h3><button class="more" data-nav="hotspot">去热点监控</button></div>
             <div class="hot-tabs" id="hotTabs">
               <button class="active" data-plat="all">全部</button>
@@ -417,13 +417,13 @@ table.tbl{width:100%; border-collapse:collapse; table-layout:fixed}
       <!-- ===== 视图：学员管理 ===== -->
       <section class="view" id="view-students">
 <div class="view-title">原版阅读任务</div>
-<div class="view-desc">仅展示17项进行中的任务 · 数据日期2026-10-05 · 当前为快照，尚未持续自动同步。</div>
+<div class="view-desc" id="readingViewSummary"></div><div class="card" style="margin-bottom:16px"><p id="readingSyncStatus" role="status">正在加载最近成功数据…</p><button id="refreshReadingData" class="row-op">刷新网站数据</button></div>
 <div class="card" style="margin-bottom:16px"><h3>任务核实范围</h3>
-<p style="margin-top:8px">8项详情已核实，合计25条记录；其余9项保留导出汇总。今天新开始的任务暂不按漏交判断。平台的平均分与0分未用于评价阅读能力。</p>
+<p id="readingCoverage" style="margin-top:8px"></p>
 <p style="margin-top:8px">公开页面仅展示脱敏汇总。学员身份、逐日提交和具体未完成项目请在后台核对。</p>
 <a class="pro-link" style="margin-top:12px" href="https://school.lingshi.com/#/taskDetail" target="_blank" rel="noopener noreferrer">打开学员任务后台</a></div>
 <div class="toolbar"><label for="stuSearch">搜索任务</label><input id="stuSearch" placeholder="输入书名或任务编号" style="padding:10px;border:1px solid var(--border);border-radius:8px">
-<label for="stuFilter">核实范围</label><select id="stuFilter"><option value="all">全部17项</option><option value="verified">详情已核实</option><option value="pending">仅导出汇总</option></select><span id="stuCount" role="status"></span></div>
+<label for="stuFilter">核实范围</label><select id="stuFilter"><option value="all">全部进行中任务</option><option value="verified">详情已核实</option><option value="pending">仅导出汇总</option></select><span id="stuCount" role="status"></span></div>
 <div class="card" style="overflow-x:auto"><table class="tbl" style="min-width:920px;table-layout:auto"><thead><tr><th>编号 / 任务</th><th>起止日期</th><th>进行天数</th><th>打卡率</th><th>完成度</th><th>已核实详情</th><th>操作</th></tr></thead><tbody id="stuBody"></tbody></table></div>
 <div class="card" style="margin-top:16px"><h3>阅读跟进提醒</h3><p style="margin:10px 0">选择任务后编辑提醒。发送前核对学情并由主讲老师审核，在后台选择学生后手动发送。</p>
 <label for="readingTaskChoice">任务</label><select id="readingTaskChoice" style="max-width:100%;padding:10px;margin:8px 0"></select>
@@ -624,16 +624,18 @@ function renderBloggerFeed(){
 /* ================= 学员表格 ================= */
 var READING_TASK_DATA = {"updated": "2026-10-05", "source": "打卡任务20261005171000.xlsx；登录后的任务详情", "verifiedRecords": 25, "tasks": [{"id": "T001", "name": "L1 Elephant and Piggie", "dates": "2026-10-05至2026-10-24", "days": "1/20", "rate": "0.00%", "completion": "0.00%", "verified": true, "verifiedCount": 1, "zeroCount": 1, "partialCount": 0, "newToday": true}, {"id": "T002", "name": "L2 Fly guy", "dates": "2026-10-05至2026-11-03", "days": "1/30", "rate": "0.00%", "completion": "0.00%", "verified": true, "verifiedCount": 1, "zeroCount": 1, "partialCount": 0, "newToday": true}, {"id": "T003", "name": "L2 L3 Frog and Toad", "dates": "2026-10-04至2026-11-02", "days": "2/30", "rate": "40.00%", "completion": "40.00%", "verified": true, "verifiedCount": 5, "zeroCount": 2, "partialCount": 0, "newToday": false}, {"id": "T004", "name": "L2 Fly guy", "dates": "2026-10-04至2026-11-02", "days": "2/30", "rate": "21.43%", "completion": "21.43%", "verified": true, "verifiedCount": 7, "zeroCount": 5, "partialCount": 0, "newToday": false}, {"id": "T005", "name": "L1 L2 Amelia Bedelia", "dates": "2026-10-04至2026-10-13", "days": "2/10", "rate": "100.00%", "completion": "75.00%", "verified": true, "verifiedCount": 2, "zeroCount": 0, "partialCount": 2, "newToday": false}, {"id": "T006", "name": "L2 Fly guy", "dates": "2026-10-03至2026-11-01", "days": "3/30", "rate": "11.11%", "completion": "11.11%", "verified": true, "verifiedCount": 3, "zeroCount": 2, "partialCount": 0, "newToday": false}, {"id": "T007", "name": "L2 L3 Frog and Toad", "dates": "2026-10-03至2026-11-01", "days": "3/30", "rate": "46.67%", "completion": "46.67%", "verified": true, "verifiedCount": 5, "zeroCount": 0, "partialCount": 0, "newToday": false}, {"id": "T008", "name": "L2 Fly guy", "dates": "2026-10-02至2026-10-31", "days": "4/30", "rate": "100.00%", "completion": "100.00%", "verified": true, "verifiedCount": 1, "zeroCount": 0, "partialCount": 0, "newToday": false}, {"id": "T009", "name": "L1 Elephant and Piggie", "dates": "2026-10-02至2026-10-31", "days": "4/30", "rate": "62.50%", "completion": "52.94%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T010", "name": "L2 L3 Frog and Toad", "dates": "2026-10-02至2026-10-31", "days": "4/30", "rate": "87.50%", "completion": "87.50%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T011", "name": "L2 Fly guy", "dates": "2026-10-02至2026-10-31", "days": "4/30", "rate": "68.75%", "completion": "54.69%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T012", "name": "L3 Nate the Great", "dates": "2026-09-29至2026-11-11", "days": "7/44", "rate": "21.43%", "completion": "8.93%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T013", "name": "L4 Princess Black", "dates": "2026-09-28至2026-11-11", "days": "8/45", "rate": "15.63%", "completion": "15.00%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T014", "name": "L4 Dragon Master1-2", "dates": "2026-09-28至2026-11-11", "days": "8/45", "rate": "62.50%", "completion": "43.33%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T015", "name": "L3 Dragon Master1-2", "dates": "2026-09-27至2026-11-10", "days": "9/45", "rate": "66.67%", "completion": "66.67%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T016", "name": "L2 Dog Man", "dates": "2026-09-27至2026-11-10", "days": "9/45", "rate": "28.89%", "completion": "25.60%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}, {"id": "T017", "name": "L2 Amelia Bedelia", "dates": "2026-09-27至2026-11-10", "days": "9/45", "rate": "25.00%", "completion": "20.00%", "verified": false, "verifiedCount": null, "zeroCount": null, "partialCount": null, "newToday": false}]};
 function readingReminder(task){
+ if(!task) return '';
+ task.newToday=task.dates.slice(0,10)===new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Shanghai'});
  if(task.newToday) return '你的《'+task.name+'》任务今天开始。请查看当天安排并按要求提交；如果操作上有困难，请及时告诉老师。';
  return '请核对《'+task.name+'》（'+task.dates+'）的阅读任务提交情况，查看是否还有未完成的项目。已完成但尚未提交，或学习、操作上遇到困难，请及时告诉老师，便于核对和安排后续学习。';
 }
 function renderStudents(){
  var q=$('#stuSearch').value.trim().toLowerCase(),f=$('#stuFilter').value;
  var list=READING_TASK_DATA.tasks.filter(function(t){return (!q||(t.name+' '+t.id).toLowerCase().includes(q))&&(f==='all'||(f==='verified'?t.verified:!t.verified));});
- $('#stuCount').textContent='显示 '+list.length+' / 17 项';
+ $('#stuCount').textContent='显示 '+list.length+' / '+READING_TASK_DATA.tasks.length+' 项';
  $('#stuBody').innerHTML=list.length?list.map(function(t){
  var note=t.verified?'已核实 '+t.verifiedCount+' 条记录':'详情尚未读取';
- if(t.newToday) note+='；今天开始';
+ if(t.dates.slice(0,10)===new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Shanghai'})) note+='；今天开始';
  else if(t.verified&&t.zeroCount) note+='；'+t.zeroCount+' 条累计打卡为零（待核对）';
  if(t.verified&&t.partialCount) note+='；'+t.partialCount+' 条打卡100%但完成不全';
  return '<tr><td><b>'+esc(t.id)+'</b><br>'+esc(t.name)+'</td><td>'+esc(t.dates)+'</td><td>'+esc(t.days)+'</td><td>'+esc(t.rate)+'</td><td>'+esc(t.completion)+'</td><td>'+esc(note)+'</td><td><button class="row-op" data-reading-task="'+t.id+'">准备提醒</button></td></tr>';
@@ -691,5 +693,6 @@ try{await navigator.clipboard.writeText(field.value);status.textContent="已复�
 catch(e){field.focus();field.select();status.textContent="请按 Ctrl+C 复制已选中的提示语。";}
 });
 })();
-</script></body>
+</script><script src="reading-sync.js"></script>
+</body>
 </html>
