@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理系统-登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 整体容器 */
+        .login-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 左侧品牌区 */
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            padding: 40px;
+        }
+
+        .brand-logo {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .brand-slogan {
+            font-size: 18px;
+            opacity: 0.85;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* 右侧登录区 */
+        .login-right {
+            flex: 1;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .login-card {
+            width: 420px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            padding: 40px 36px;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        /* 登录方式切换 */
+        .login-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 28px;
+        }
+
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            font-size: 15px;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-item.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            font-weight: 500;
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #2563eb;
+        }
+
+        /* 验证码行 */
+        .code-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .code-row .form-input {
+            flex: 1;
+        }
+
+        .code-btn {
+            width: 120px;
+            height: 44px;
+            border: 1px solid #2563eb;
+            background: #fff;
+            color: #2563eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .code-btn:hover {
+            background: #eff6ff;
+        }
+
+        .code-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 登录按钮 */
+        .login-btn {
+            width: 100%;
+            height: 46px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* 快捷操作 */
+        .quick-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .quick-actions a {
+            color: #6b7280;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .quick-actions a:hover {
+            color: #2563eb;
+        }
+
+        /* 分割线 */
+        .divider {
+            text-align: center;
+            margin: 28px 0 20px;
+            position: relative;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        /* 其他登录方式 */
+        .other-login {
+            text-align: center;
+        }
+
+        .scan-login {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .scan-login:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        /* 底部语言切换 */
+        .lang-switch {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .lang-switch:hover {
+            color: #2563eb;
+        }
+
+        /* 表单内容切换 */
+        .form-panel {
+            display: none;
+        }
+
+        .form-panel.active {
+            display: block;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .login-left {
+                display: none;
+            }
+
+            .login-right {
+                padding: 20px;
+            }
+
+            .login-card {
+                width: 100%;
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- 左侧品牌区 -->
+        <div class="login-left">
+            <div class="brand-logo">管理后台</div>
+            <div class="brand-slogan">
+                高效 · 智能 · 安全<br>
+                一站式企业管理平台
+            </div>
+        </div>
+
+        <!-- 右侧登录区 -->
+        <div class="login-right">
+            <div class="login-card">
+                <h2 class="login-title">欢迎使用管理后台</h2>
+
+                <!-- 登录方式切换 -->
+                <div class="login-tabs">
+                    <div class="tab-item active" data-tab="account">账号登录</div>
+                    <div class="tab-item" data-tab="code">验证码登录</div>
+                </div>
+
+                <!-- 账号登录表单 -->
+                <div class="form-panel active" id="account-panel">
+                    <div class="form-group">
+                        <input type="text" class="form-input" placeholder="请输入账号">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-input" placeholder="请输入密码">
+                    </div>
+                </div>
+
+                <!-- 验证码登录表单 -->
+                <div class="form-panel" id="code-panel">
+                    <div class="form-group">
+                        <input type="tel" class="form-input" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-group code-row">
+                        <input type="text" class="form-input" placeholder="请输入验证码">
+                        <button class="code-btn" id="getCodeBtn">获取验证码</button>
+                    </div>
+                </div>
+
+                <!-- 登录按钮 -->
+                <button class="login-btn">登 录</button>
+
+                <!-- 快捷操作 -->
+                <div class="quick-actions">
+                    <a onclick="saveToDesktop()">保存至桌面</a>
+                    <a onclick="addFavorite()">添加至收藏夹</a>
+                </div>
+
+                <!-- 分割线 -->
+                <div class="divider">其他方式登录</div>
+
+                <!-- 扫码登录 -->
+                <div class="other-login">
+                    <div class="scan-login">
+                        <span>📱</span>
+                        <span>APP扫码登录</span>
+                    </div>
+                </div>
+
+                <!-- 语言切换 -->
+                <div class="lang-switch">切换语言 / English</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 登录方式切换
+        const tabs = document.querySelectorAll('.tab-item');
+        const panels = document.querySelectorAll('.form-panel');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                
+                // 切换tab状态
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // 切换面板
+                panels.forEach(p => p.classList.remove('active'));
+                document.getElementById(target + '-panel').classList.add('active');
+            });
+        });
+
+        // 获取验证码倒计时
+        const codeBtn = document.getElementById('getCodeBtn');
+        let countdown = 60;
+        let timer = null;
+
+        codeBtn.addEventListener('click', () => {
+            if (timer) return;
+            
+            codeBtn.disabled = true;
+            codeBtn.textContent = `${countdown}s后重发`;
+            
+            timer = setInterval(() => {
+                countdown--;
+                codeBtn.textContent = `${countdown}s后重发`;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    timer = null;
+                    countdown = 60;
+                    codeBtn.disabled = false;
+                    codeBtn.textContent = '获取验证码';
+                }
+            }, 1000);
+        });
+
+        // 保存至桌面（创建快捷方式提示）
+        function saveToDesktop() {
+            alert('请按 Ctrl+D（Mac：Command+D）将页面保存到书签，或手动创建桌面快捷方式');
+        }
+
+        // 添加至收藏夹
+        function addFavorite() {
+            const title = document.title;
+            const url = window.location.href;
+            
+            try {
+                // IE
+                if (window.external && window.external.AddFavorite) {
+                    window.external.AddFavorite(url, title);
+                }
+                // 其他浏览器提示
+                else {
+                    alert('请按 Ctrl+D（Mac：Command+D）添加到收藏夹');
+                }
+            } catch (e) {
+                alert('请按 Ctrl+D（Mac：Command+D）添加到收藏夹');
+            }
+        }
+
+        // 登录按钮示例
+        document.querySelector('.login-btn').addEventListener('click', () => {
+            alert('登录功能需对接后端接口，此处为演示效果');
+        });
+    </script>
+</body>
+</html>
