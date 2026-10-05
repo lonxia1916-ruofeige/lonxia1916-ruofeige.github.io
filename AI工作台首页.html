@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>若飞哥 · 教育 AI 工作台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23B8923E' d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+:root{
+  --bg:#F5F4F0; --surface:#FFFFFF; --border:#E4E1D8; --border-strong:#CFC9BC;
+  --ink:#2A2D31; --muted:#6B6F76; --faint:#9AA0A8;
+  --brand:#B8923E; --brand-deep:#9A7728; --brand-soft:#F1E7CF;
+  --sidebar:#1E2124; --sidebar-ink:#C9C6BD; --sidebar-active:#F4EEDC;
+  --accent:#C9A961; --accent-soft:#F6EFD9; --accent-ink:#8A6A1F;
+  --ok:#5A7A5A; --ok-soft:#E7EDE7; --warn:#B08A3E; --warn-soft:#F5EBD6; --danger:#A85A4E; --danger-soft:#F3E2DE;
+  --radius-lg:14px; --radius-md:10px; --radius-sm:6px;
+  --shadow:0 1px 2px rgba(42,45,49,.05);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%}
+body{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased}
+a{color:inherit; text-decoration:none}
+.num{font-variant-numeric:tabular-nums}
+button{font-family:inherit; cursor:pointer; border:none; background:none}
+
+/* ============ 布局骨架 ============ */
+.layout{display:flex; min-height:100vh}
+.sidebar{width:232px; flex:0 0 232px; background:var(--sidebar); color:var(--sidebar-ink); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto}
+.main{flex:1; min-width:0; display:flex; flex-direction:column}
+.content{flex:1; padding:24px 28px 48px; max-width:1320px; width:100%; margin:0 auto}
+
+/* ============ 侧边栏 ============ */
+.brand{display:flex; align-items:center; gap:10px; padding:18px 18px 16px}
+.brand .logo{width:34px; height:34px; border-radius:9px; background:var(--brand); display:flex; align-items:center; justify-content:center; color:#fff; flex:0 0 34px}
+.brand .name{font-weight:900; font-size:16px; color:#F4EEDC; letter-spacing:.5px; line-height:1.2}
+.brand .sub{font-size:11px; color:#8A8778; margin-top:2px}
+.nav{padding:6px 12px 20px; flex:1}
+.nav .group{font-size:11px; color:#8A8778; padding:14px 10px 6px; letter-spacing:1px}
+.nav a{display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:var(--sidebar-ink); font-size:14px; margin-bottom:2px; transition:background .15s,color .15s}
+.nav a svg{width:17px; height:17px; flex:0 0 17px; opacity:.85}
+.nav a:hover{background:rgba(255,255,255,.07); color:#fff}
+.nav a.active{background:var(--brand); color:var(--sidebar-active); font-weight:700}
+.nav a .badge{margin-left:auto; background:var(--accent); color:#fff; font-size:10px; border-radius:99px; padding:1px 7px; font-weight:700}
+.side-foot{padding:14px 16px 18px; border-top:1px solid rgba(255,255,255,.08); font-size:11px; color:#8A8778}
+.side-foot .row{display:flex; align-items:center; gap:8px; margin-bottom:6px}
+.side-foot svg{width:14px; height:14px}
+
+/* ============ 顶栏 ============ */
+.header{position:sticky; top:0; z-index:20; background:rgba(245,244,240,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; gap:16px}
+.header .crumb{font-weight:700; font-size:15px}
+.header .crumb small{font-weight:400; color:var(--muted); margin-left:8px}
+.header .spacer{flex:1}
+.search-box{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:7px 14px; width:260px}
+.search-box svg{width:15px; height:15px; color:var(--faint)}
+.search-box input{border:none; outline:none; flex:1; font-size:13px; color:var(--ink); background:none}
+.header .date-tag{font-size:13px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 12px}
+.header .avatar{width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex:0 0 34px}
+
+/* ============ 通用卡片 ============ */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow)}
+.card h3{font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px}
+.card h3 .tag{font-size:11px; font-weight:400; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:1px 8px; border-radius:99px}
+.card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+.card-head .more{font-size:12px; color:var(--brand); display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px}
+.card-head .more:hover{background:var(--brand-soft)}
+.sample-note{font-size:11px; color:var(--faint); border:1px dashed var(--border-strong); border-radius:var(--radius-sm); padding:4px 10px; background:var(--bg); display:inline-block}
+
+/* ============ 统计卡 ============ */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px}
+.stat{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:14px}
+.stat .ico{width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex:0 0 42px}
+.stat .ico svg{width:21px; height:21px}
+.stat .val{font-size:24px; font-weight:900; line-height:1.15}
+.stat .lab{font-size:12px; color:var(--muted)}
+.stat .delta{font-size:11px; margin-top:2px}
+.delta.up{color:var(--ok)} .delta.down{color:var(--danger)}
+.ico-teal{background:var(--brand-soft); color:var(--brand)}
+.ico-orange{background:var(--accent-soft); color:var(--accent-ink)}
+.ico-green{background:var(--ok-soft); color:var(--ok)}
+.ico-amber{background:var(--warn-soft); color:var(--warn)}
+
+/* ============ 首页主区 ============ */
+.grid-2{display:grid; grid-template-columns:1.6fr 1fr; gap:16px; margin-bottom:16px}
+.chart-box{height:270px; width:100%}
+.chart-empty{height:270px; display:flex; align-items:center; justify-content:center; color:var(--faint); font-size:13px; text-align:center; padding:0 20px}
+
+/* 学员动态列表 */
+.feed{display:flex; flex-direction:column}
+.feed .item{display:flex; gap:12px; padding:11px 0; border-bottom:1px dashed var(--border)}
+.feed .item:last-child{border-bottom:none}
+.feed .dot{width:9px; height:9px; border-radius:50%; margin-top:6px; flex:0 0 9px}
+.feed .txt{flex:1; min-width:0}
+.feed .t1{font-size:13px; color:var(--ink)}
+.feed .t1 b{font-weight:600}
+.feed .t2{font-size:12px; color:var(--muted); margin-top:2px}
+.feed .time{font-size:11px; color:var(--faint); flex:0 0 auto}
+
+/* 热点速览 */
+.hot-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.hot-tabs button{font-size:12px; padding:5px 13px; border-radius:999px; border:1px solid var(--border-strong); color:var(--muted); background:var(--surface)}
+.hot-tabs button.active{background:var(--brand); border-color:var(--brand); color:#fff; font-weight:700}
+.hot-item{display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px dashed var(--border)}
+.hot-item:last-child{border-bottom:none}
+.hot-item .pchip{font-size:11px; border-radius:5px; padding:1px 7px; flex:0 0 auto; margin-top:2px; font-weight:700}
+.p-dyh{background:#B8923E; color:#fff}.p-sp{background:#2A2D31; color:#fff}.p-wb{background:#8A8F96; color:#fff}.p-zh{background:#6B6F76; color:#fff}.p-bz{background:#C9A961; color:#3A2E10}
+.hot-item .h-title{font-size:13px; line-height:1.45}
+.hot-item .h-meta{font-size:11px; color:var(--faint); margin-top:2px}
+.hot-item .h-heat{margin-left:auto; flex:0 0 auto; font-size:11px; color:var(--accent-ink); font-weight:700}
+
+/* 博主卡片 */
+.bloggers{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:16px}
+.blogger{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow)}
+.blogger .top{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+.blogger .av{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; flex:0 0 38px}
+.blogger .nm{font-weight:700; font-size:13px}
+.blogger .fd{font-size:11px; color:var(--muted)}
+.blogger .topic{font-size:12px; color:var(--ink); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-bottom:10px}
+.blogger .foot{display:flex; align-items:center; justify-content:space-between}
+.blogger .foot .heat{font-size:11px; color:var(--accent-ink); font-weight:700}
+.blogger .foot a{font-size:12px; color:var(--brand); display:flex; align-items:center; gap:3px}
+
+/* ============ 学员管理 ============ */
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
+.toolbar select,.toolbar .search2{border:1px solid var(--border-strong); border-radius:8px; padding:8px 12px; font-size:13px; background:var(--surface); color:var(--ink)}
+.toolbar .search2{display:flex; align-items:center; gap:7px}
+.toolbar .search2 input{border:none; outline:none; font-size:13px; width:180px; background:none}
+.toolbar .tool-spacer{flex:1}
+.toolbar .count{font-size:12px; color:var(--muted)}
+table.tbl{width:100%; border-collapse:collapse; table-layout:fixed}
+.tbl th{font-size:12px; color:var(--muted); font-weight:500; text-align:left; padding:10px 12px; border-bottom:1px solid var(--border-strong); background:var(--bg)}
+.tbl td{padding:12px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle}
+.tbl tr:hover td{background:#F7F5F0}
+.stu-name{display:flex; align-items:center; gap:9px; font-weight:600}
+.stu-name .av{width:28px; height:28px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; flex:0 0 28px}
+.progress{height:6px; background:#E8E5DC; border-radius:99px; overflow:hidden}
+.progress i{display:block; height:100%; background:var(--brand); border-radius:99px}
+.progress.warn i{background:var(--accent)}
+.progress.low i{background:var(--danger)}
+.tag{display:inline-block; font-size:11px; border-radius:99px; padding:2px 9px; font-weight:600}
+.tag.act{background:var(--ok-soft); color:var(--ok)}
+.tag.follow{background:var(--warn-soft); color:var(--warn)}
+.tag.done{background:var(--brand-soft); color:var(--brand)}
+.tag.pause{background:#ECEBE4; color:#6B6F76}
+.row-op{color:var(--brand); font-size:12px; padding:4px 6px; border-radius:6px}
+.row-op:hover{background:var(--brand-soft)}
+.empty-row{text-align:center; color:var(--faint); padding:28px 0 !important}
+
+/* ============ 热点监控 ============ */
+.grid-2b{display:grid; grid-template-columns:1fr 1.5fr; gap:16px; margin-bottom:16px}
+.hlist{margin-top:6px}
+.hlist .row2{display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px dashed var(--border)}
+.hlist .row2:last-child{border-bottom:none}
+.hlist .rank{width:22px; height:22px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--muted); font-size:11px; display:flex; align-items:center; justify-content:center; flex:0 0 22px; font-weight:700}
+.hlist .rank.top{background:var(--accent); color:#fff; border-color:var(--accent)}
+.hlist .grow{flex:1; min-width:0}
+.hlist .grow .t{font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hlist .grow .m{font-size:11px; color:var(--faint)}
+
+/* ============ 个人主页 ============ */
+.profile-grid{display:grid; grid-template-columns:340px 1fr; gap:16px}
+.pro-card{text-align:center; padding:28px 24px}
+.pro-card .big-av{width:78px; height:78px; border-radius:50%; background:var(--accent); color:#fff; font-size:30px; font-weight:900; display:flex; align-items:center; justify-content:center; margin:0 auto 14px}
+.pro-card .nm{font-size:19px; font-weight:900}
+.pro-card .bio{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6}
+.pro-tags{display:flex; gap:7px; justify-content:center; flex-wrap:wrap; margin:14px 0 18px}
+.pro-tags span{font-size:11px; background:var(--bg); border:1px solid var(--border); border-radius:99px; padding:3px 11px; color:var(--muted)}
+.pro-links{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.pro-link{display:flex; align-items:center; gap:9px; border:1px solid var(--border); border-radius:10px; padding:11px 12px; font-size:13px; font-weight:600; transition:border-color .15s, background .15s}
+.pro-link svg{width:17px; height:17px; color:var(--brand)}
+.pro-link:hover{border-color:var(--brand); background:var(--brand-soft)}
+.pro-dyn .item{padding:13px 0; border-bottom:1px dashed var(--border)}
+.pro-dyn .item:last-child{border-bottom:none}
+.pro-dyn .t{font-size:13px}
+.pro-dyn .m{font-size:11px; color:var(--faint); margin-top:3px}
+
+/* ============ 工具导航 ============ */
+.tools{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+.tool{display:flex; flex-direction:column; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow); transition:transform .15s, border-color .15s}
+.tool:hover{transform:translateY(-2px); border-color:var(--brand)}
+.tool .tico{width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--brand-soft); color:var(--brand)}
+.tool .tico svg{width:24px; height:24px}
+.tool .tt{font-size:15px; font-weight:700}
+.tool .td{font-size:12px; color:var(--muted); flex:1}
+.tool .go{align-self:flex-start; font-size:12px; color:var(--brand); display:flex; align-items:center; gap:4px; font-weight:600}
+
+/* ============ 视图 ============ */
+.view{display:none}
+.view.active{display:block}
+.view-title{font-size:18px; font-weight:900; margin-bottom:4px}
+.view-desc{font-size:13px; color:var(--muted); margin-bottom:18px}
+
+/* ============ Toast ============ */
+#toast{position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-size:13px; padding:10px 18px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.18)}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* ============ 响应式 ============ */
+@media (max-width:1180px){
+  .grid-2{grid-template-columns:1fr}
+  .grid-2b{grid-template-columns:1fr}
+  .bloggers{grid-template-columns:repeat(2,1fr)}
+  .tools{grid-template-columns:repeat(2,1fr)}
+  .profile-grid{grid-template-columns:1fr}
+}
+@media (max-width:960px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%; height:auto; position:static; flex-direction:column}
+  .brand{padding:12px 16px}
+  .nav{display:flex; overflow-x:auto; padding:6px 10px; gap:4px}
+  .nav .group{display:none}
+  .nav a{flex:0 0 auto; white-space:nowrap; font-size:13px}
+  .side-foot{display:none}
+  .header{padding:0 16px}
+  .search-box{display:none}
+  .content{padding:18px 16px 40px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:560px){
+  body{font-size:15px}
+  input,select,textarea{font-size:16px}
+  .stats{grid-template-columns:1fr 1fr; gap:10px}
+  .bloggers{grid-template-columns:1fr}
+  .tools{grid-template-columns:1fr}
+  .header .date-tag{display:none}
+  .hot-tabs{gap:6px}
+  .tbl .hide-s{display:none}
+  .feed .t1,.hot-item .h-title,.hlist .grow .t,.stu-name,.pro-dyn .t,.tool .td,.view-desc{font-size:14px}
+  .tbl td{font-size:14px}
+  .hot-tabs button,.card-head .more,.row-op{min-height:44px; display:inline-flex; align-items:center; justify-content:center}
+  .blogger .foot a{min-height:44px; display:inline-flex; align-items:center; gap:3px}
+  .pro-link{min-height:44px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 10.5V21h7v-6h4v6h7V10.5L12 3z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path fill="currentColor" d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.5 0-7 2-7 5v2h8v-2c0-1.1.4-2.1 1-3-.6-.1-1.3-.2-2-.2zm7.5-2a3.3 3.3 0 1 0 0-6.6 3.3 3.3 0 0 0 0 6.6zm.5 2c-1.5 0-3.5.8-4.3 2H22c0-3-3.5-5-7-5z"/></symbol>
+  <symbol id="i-fire" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2s5 3.5 5 9a5 5 0 0 1-10 0c0-1.5.5-3 1.5-4.5C9 8 10 10 11 10 11.5 6 12 4 12 2zM12 22c-3.5 0-6.5-2.7-6.5-6 0-1.5.6-3 1.7-4.5.4 1 1 2 1.8 2.9.3-1.5.8-3.4 2-5.3 1.8 2.5 3 5 3 7.4 0 1.7-1.3 3.5-3 3.5h-1z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-6 0-10 4-10 7v1h20v-1c0-3-4-7-10-7z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path fill="currentColor" d="M4 5a3 3 0 0 1 3-3h13v16H7a2 2 0 0 0-2 2V5zm2 14a1 1 0 0 1 1-1h12v2H7a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 11h-5v-2h3V7h2v6z"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3zM5 5h5v2H7v12h12v-3h2v5H5V5z"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.6a10.4 10.4 0 0 0-3.3 20.3c.5.1.7-.2.7-.5v-2c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10.4 10.4 0 0 0 12 1.6z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2zm6 12 .9 2.9L22 18l-3.1.9L18 22l-.9-3.1L14 18l3.1-.9L18 14z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7L8 5z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm6-6v-5c0-3.1-1.6-5.6-4.5-6.3V4a1.5 1.5 0 0 0-3 0v.7C7.6 5.4 6 7.9 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.3V21h3.7L19.8 7.9l-3.7-3.7L3 17.3zM20.7 7 22 5.7a2 2 0 0 0 0-2.8l-1-1a2 2 0 0 0-2.8 0L17 3.2l3.7 3.7z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path fill="currentColor" d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2h9l5 5v15H6V2zm9 1.5V7h3.5L15 3.5zM8 11h8v2H8v-2zm0 4h8v2H8v-2z"/></symbol>
+</svg>
+
+<div class="layout">
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"><svg width="19" height="19" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <div>
+        <div class="name">若飞哥 AI 工作台</div>
+        <div class="sub">教育运营 · 数据与热点</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="group">工作台</div>
+      <a href="#home" data-view="home" class="active"><svg><use xlink:href="#i-home"/></svg>工作台首页</a>
+      <a href="#students" data-view="students"><svg><use xlink:href="#i-users"/></svg>学员管理</a>
+      <a href="#hotspot" data-view="hotspot"><svg><use xlink:href="#i-fire"/></svg>热点监控<span class="badge">新</span></a>
+      <div class="group">我的</div>
+      <a href="#profile" data-view="profile"><svg><use xlink:href="#i-user"/></svg>个人主页</a>
+      <a href="#tools" data-view="tools"><svg><use xlink:href="#i-grid"/></svg>工具导航</a>
+    </nav>
+    <div class="side-foot">
+      <div class="row"><svg><use xlink:href="#i-git"/></svg>GitHub · lonxia1916-ruofeige</div>
+      <div class="row"><svg><use xlink:href="#i-spark"/></svg>Codex · 待接入</div>
+    </div>
+  </aside>
+
+  <!-- ============ 主区域 ============ -->
+  <div class="main">
+    <header class="header">
+      <div class="crumb"><span id="pageTitle">工作台首页</span><small id="pageSub">今日概览</small></div>
+      <div class="spacer"></div>
+      <div class="search-box"><svg><use xlink:href="#i-search"/></svg><input id="globalSearch" placeholder="搜索学员、课程、热点…"></div>
+      <div class="date-tag num" id="dateTag"></div>
+      <div class="avatar">若</div>
+    </header>
+
+    <div class="content">
+      <!-- ===== 视图：工作台首页 ===== -->
+      <section class="view active" id="view-home">
+        <div class="view-title">早上好，若飞哥</div>
+        <div class="view-desc">学员学习情况与全网教育热点，一屏掌握。<span class="sample-note">当前为示例数据，接入真实数据源后自动更新</span></div>
+
+        <div class="stats">
+          <div class="stat"><div class="ico ico-teal"><svg><use xlink:href="#i-users"/></svg></div><div><div class="val num">128</div><div class="lab">在册学员</div><div class="delta up">较上周 +6 人</div></div></div>
+          <div class="stat"><div class="ico ico-green"><svg><use xlink:href="#i-check"/></svg></div><div><div class="val num">36</div><div class="lab">本周活跃学员</div><div class="delta up">活跃率 28%</div></div></div>
+          <div class="stat"><div class="ico ico-amber"><svg><use xlink:href="#i-clock"/></svg></div><div><div class="val num">12</div><div class="lab">待跟进学员</div><div class="delta down">需电话回访</div></div></div>
+          <div class="stat"><div class="ico ico-orange"><svg><use xlink:href="#i-fire"/></svg></div><div><div class="val num">47</div><div class="lab">今日教育热点</div><div class="delta up">较昨日 +9</div></div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>近 7 日学习时长趋势 <span class="tag">示例</span></h3><button class="more" data-demo>接入真实数据<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></button></div>
+            <div id="chartTrend" class="chart-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>学员状态分布 <span class="tag">示例</span></h3><button class="more" data-demo>查看全部</button></div>
+            <div id="chartStatus" class="chart-box"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>最新学习动态 <span class="tag">示例</span></h3><button class="more" data-nav="students">去学员管理</button></div>
+            <div class="feed">
+              <div class="item"><span class="dot" style="background:var(--ok)"></span><div class="txt"><div class="t1"><b>陈同学</b> 完成《数学思维·第 4 讲》练习</div><div class="t2">得分 92，进步明显</div></div><div class="time">今天 09:41</div></div>
+              <div class="item"><span class="dot" style="background:var(--accent)"></span><div class="txt"><div class="t1"><b>林同学</b> 连续 3 天未登录，待跟进</div><div class="t2">上次活跃：3 天前</div></div><div class="time">昨天 18:02</div></div>
+              <div class="item"><span class="dot" style="background:var(--brand)"></span><div class="txt"><div class="t1"><b>王同学</b> 提交《语文阅读》周测</div><div class="t2">成绩 88，进入班级前 5</div></div><div class="time">昨天 16:25</div></div>
+              <div class="item"><span class="dot" style="background:var(--warn)"></span><div class="txt"><div class="t1"><b>张同学</b> 编程入门课进度 60%</div><div class="t2">建议安排一次阶段测评</div></div><div class="time">昨天 11:30</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>热点速览 <span class="tag">示例</span></h3><button class="more" data-nav="hotspot">去热点监控</button></div>
+            <div class="hot-tabs" id="hotTabs">
+              <button class="active" data-plat="all">全部</button>
+              <button data-plat="视频号">视频号</button>
+              <button data-plat="抖音">抖音</button>
+              <button data-plat="微博">微博</button>
+              <button data-plat="知乎">知乎</button>
+              <button data-plat="B站">B站</button>
+            </div>
+            <div id="hotList"></div>
+          </div>
+        </div>
+
+        <h3 style="margin:20px 0 6px; font-size:15px">知名教育博主 · 视频号动态 <span class="tag" style="font-size:11px; font-weight:400; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:1px 8px; border-radius:99px">示例</span></h3>
+        <div class="bloggers" id="bloggerGrid"></div>
+      </section>
+
+      <!-- ===== 视图：学员管理 ===== -->
+      <section class="view" id="view-students">
+        <div class="view-title">学员管理</div>
+        <div class="view-desc">监控每位学员的学习进度与活跃情况。<span class="sample-note">以下为示例学员数据</span></div>
+        <div class="card" style="margin-bottom:16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap">
+          <div style="flex:1; min-width:220px">
+            <div style="font-weight:700; font-size:14px">灵犀学校 · 学员管理系统</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:3px">登录后查看真实学员学习数据；账号 adminnfgyy，密码请用浏览器密码管理器保存（勿写入公开页面）。</div>
+          </div>
+          <a class="pro-link" href="https://school.lingshi.com/#/member" target="_blank" rel="noopener" style="min-width:170px; justify-content:center"><svg><use xlink:href="#i-users"/></svg>登录学员系统</a>
+        </div>
+
+        <div class="toolbar">
+          <select id="stuFilter">
+            <option value="all">全部状态</option>
+            <option value="学习中">学习中</option>
+            <option value="待跟进">待跟进</option>
+            <option value="活跃">活跃</option>
+            <option value="已完成">已完成</option>
+          </select>
+          <div class="search2"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><input id="stuSearch" placeholder="搜索学员姓名…"></div>
+          <div class="tool-spacer"></div>
+          <div class="count num" id="stuCount">共 6 名学员</div>
+          <button class="row-op" data-demo>导出报表</button>
+        </div>
+
+        <div class="card" style="padding:10px 6px">
+          <table class="tbl">
+            <colgroup><col style="width:18%"><col style="width:20%"><col style="width:24%"><col style="width:16%"><col style="width:12%"><col style="width:10%"></colgroup>
+            <thead><tr><th>学员</th><th>当前课程</th><th>学习进度</th><th>最近活跃</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="stuBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== 视图：热点监控 ===== -->
+      <section class="view" id="view-hotspot">
+        <div class="view-title">热点监控</div>
+        <div class="view-desc">各大平台教育类热点与知名博主动态，帮你把握内容方向。<span class="sample-note">以下为示例数据，真实数据建议通过各平台官方渠道接入</span></div>
+
+        <div class="grid-2b">
+          <div class="card">
+            <div class="card-head"><h3>各平台教育热点活跃度 <span class="tag">示例</span></h3></div>
+            <div id="chartHeat" class="chart-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>今日热点榜单 <span class="tag">示例</span></h3><button class="more" data-demo>刷新</button></div>
+            <div class="hlist" id="rankList"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head"><h3>知名教育视频号博主 · 最近主讲内容 <span class="tag">示例</span></h3><button class="more" data-demo>订阅更多博主</button></div>
+          <div class="hlist" id="bloggerFeed"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>采集与接入说明</h3></div>
+          <div style="font-size:13px; color:var(--muted); line-height:1.9">
+            <p>1. 热点数据：优先使用各平台官方开放接口、创作者后台数据与公开信息，避免对平台流量做未授权抓包。</p>
+            <p>2. 博主监控：可通过视频号创作者服务、平台订阅与收藏功能跟踪更新，再手动录入或接入官方 API。</p>
+            <p>3. 本页为布局骨架，后续接入真实数据源后，替换示例数据即可。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 视图：个人主页 ===== -->
+      <section class="view" id="view-profile">
+        <div class="view-title">个人主页</div>
+        <div class="view-desc">你的身份入口：个人主页、视频号主页与常用服务。</div>
+
+        <div class="profile-grid">
+          <div class="card pro-card">
+            <div class="big-av">若</div>
+            <div class="nm">若飞哥</div>
+            <div class="bio">教育工作者 · AI 工具实践者<br>坐标厦门，关注家庭教育与学习方法</div>
+            <div class="pro-tags"><span>教育运营</span><span>视频号创作者</span><span>AI 工作流</span><span>两个孩子的爸爸</span></div>
+            <div class="pro-links">
+              <a class="pro-link" href="https://github.com/lonxia1916-ruofeige" target="_blank" rel="noopener"><svg><use xlink:href="#i-git"/></svg>我的 GitHub</a>
+              <a class="pro-link" href="https://channels.weixin.qq.com/" target="_blank" rel="noopener"><svg><use xlink:href="#i-play"/></svg>我的视频号</a>
+            </div>
+            <div style="font-size:11px; color:var(--faint); margin-top:12px">微信号 GR_Reading_T_Lon；视频号主页链接需在视频号 App 内「分享主页 → 复制链接」获取后替换（微信号无法直接生成主页链接）</div>
+          </div>
+
+          <div class="card pro-dyn">
+            <div class="card-head"><h3>最近动态 <span class="tag">示例</span></h3><button class="more" data-demo>发布新动态</button></div>
+            <div class="item"><div class="t">分享了视频《如何培养孩子的自主学习能力》</div><div class="m">视频号 · 3 天前 · 播放 2.3k</div></div>
+            <div class="item"><div class="t">整理了《小学阶段阅读书单（家长版）》</div><div class="m">公众号 · 上周 · 阅读 1.8k</div></div>
+            <div class="item"><div class="t">用 Codex 搭建了教育热点日报工作流</div><div class="m">GitHub · 上周 · 开源分享</div></div>
+            <div class="item"><div class="t">发布《期中复习规划模板》供学员使用</div><div class="m">工作台 · 2 周前</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 视图：工具导航 ===== -->
+      <section class="view" id="view-tools">
+        <div class="view-title">工具导航</div>
+        <div class="view-desc">AI 工作台常用工具与平台入口，一键直达。</div>
+
+        <div class="tools" style="margin-bottom:16px">
+          <a class="tool" href="https://github.com/lonxia1916-ruofeige" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-git"/></svg></div><div class="tt">GitHub</div><div class="td">托管代码、开源项目与工作流脚本</div><div class="go">打开主页<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+          <a class="tool" href="https://chatgpt.com/codex" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-spark"/></svg></div><div class="tt">OpenAI Codex</div><div class="td">AI 编程助手，编写与维护工作台代码</div><div class="go">开始使用<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+          <a class="tool" href="https://channels.weixin.qq.com/" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-play"/></svg></div><div class="tt">微信视频号</div><div class="td">发布与查看视频号内容、博主动态</div><div class="go">进入平台<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+          <a class="tool" href="https://mp.weixin.qq.com/" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-doc"/></svg></div><div class="tt">微信公众号平台</div><div class="td">文章发布、粉丝管理与内容分发</div><div class="go">进入后台<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+          <a class="tool" href="https://cloud.tencent.com/" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-home"/></svg></div><div class="tt">腾讯云控制台</div><div class="td">域名、DNS、服务器与云资源管理</div><div class="go">进入控制台<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+          <a class="tool" href="https://creator.douyin.com/" target="_blank" rel="noopener"><div class="tico"><svg><use xlink:href="#i-bell"/></svg></div><div class="tt">抖音创作服务平台</div><div class="td">短视频发布、数据与热点趋势</div><div class="go">进入后台<svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></div></a>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>我的 AI 工作流</h3></div>
+          <div style="font-size:13px; color:var(--muted); line-height:1.9">
+            <p>1. GitHub Pages 托管本站点（www.xmruofeige.com）。</p>
+            <p>2. Codex 维护页面代码与数据处理脚本。</p>
+            <p>3. 热点数据经官方渠道汇总后，在此页面统一查看。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Toast ===== -->
+      <div id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 示例数据 ================= */
+var STUDENTS = [
+  {name:'陈同学', course:'数学思维', prog:78, active:'昨天', status:'学习中', color:'#B8923E'},
+  {name:'林同学', course:'英语启蒙', prog:45, active:'3天前', status:'待跟进', color:'#8A8F96'},
+  {name:'王同学', course:'语文阅读', prog:92, active:'今天', status:'已完成', color:'#B8923E'},
+  {name:'张同学', course:'编程入门', prog:60, active:'昨天', status:'学习中', color:'#B8923E'},
+  {name:'李同学', course:'作文提升', prog:30, active:'5天前', status:'待跟进', color:'#8A8F96'},
+  {name:'黄同学', course:'科学实验', prog:85, active:'今天', status:'活跃', color:'#C9A961'}
+];
+
+var HOT_ALL = [
+  {plat:'视频号', p:'sp', title:'「张老师讲语文」解读新课标阅读方法，家长热议', meta:'视频号 · 2小时前', heat:'98.2万'},
+  {plat:'抖音', p:'dyh', title:'名师直播：期中复习怎么规划？今晚 8 点开讲', meta:'抖音 · 3小时前', heat:'76.5万'},
+  {plat:'微博', p:'wb', title:'话题 #家庭教育# 阅读量破 3 亿', meta:'微博 · 5小时前', heat:'62.1万'},
+  {plat:'知乎', p:'zh', title:'如何培养孩子的自主学习能力？高赞回答合集', meta:'知乎 · 昨天', heat:'58.7万'},
+  {plat:'B站', p:'bz', title:'学习方法区 UP 主新作：错题本的正确用法', meta:'B站 · 昨天', heat:'41.3万'},
+  {plat:'视频号', p:'sp', title:'「王妈育儿说」谈幼小衔接三大误区', meta:'视频号 · 昨天', heat:'39.8万'},
+  {plat:'抖音', p:'dyh', title:'小学计算能力这样练，一个月见效', meta:'抖音 · 1天前', heat:'35.2万'}
+];
+
+var RANKS = [
+  {plat:'视频号', title:'张老师讲语文：新课标阅读方法解读', meta:'教育博主 · 2小时前', heat:98},
+  {plat:'抖音', title:'期中复习规划直播预告', meta:'名师直播 · 3小时前', heat:76},
+  {plat:'微博', title:'#家庭教育# 话题升温', meta:'微博热搜 · 5小时前', heat:62},
+  {plat:'知乎', title:'自主学习能力培养高赞回答', meta:'知乎热议 · 昨天', heat:58},
+  {plat:'B站', title:'错题本的正确用法', meta:'学习区 UP · 昨天', heat:41}
+];
+
+var BLOGGERS = [
+  {av:'#B8923E', nm:'张老师讲语文', fd:'语文教育 · 视频号', topic:'最近主讲：新课标下的整本书阅读方法', heat:'98.2万'},
+  {av:'#C9A961', nm:'李老师聊数学', fd:'数学思维 · 视频号', topic:'最近主讲：计算能力培养的 3 个阶段', heat:'76.5万'},
+  {av:'#8A8F96', nm:'王妈育儿说', fd:'家庭教育 · 视频号', topic:'最近主讲：幼小衔接的三大常见误区', heat:'58.7万'},
+  {av:'#8A6A1F', nm:'陈老师英语启蒙', fd:'英语启蒙 · 视频号', topic:'最近主讲：自然拼读要不要提前学', heat:'43.1万'}
+];
+
+var BLOGGER_FEED = [
+  {nm:'张老师讲语文', fd:'语文教育', topic:'《新课标下的整本书阅读方法》连更第 3 期', heat:'98.2万', time:'今天'},
+  {nm:'李老师聊数学', fd:'数学思维', topic:'直播回放：计算能力培养的三个阶段', heat:'76.5万', time:'昨天'},
+  {nm:'王妈育儿说', fd:'家庭教育', topic:'幼小衔接三大误区，家长最容易踩', heat:'58.7万', time:'前天'},
+  {nm:'陈老师英语启蒙', fd:'英语启蒙', topic:'自然拼读要不要提前学？我的看法', heat:'43.1万', time:'3天前'}
+];
+
+var PLAT_CLASS = {'视频号':'p-sp','抖音':'p-dyh','微博':'p-wb','知乎':'p-zh','B站':'p-bz'};
+var STATUS_TAG = {'学习中':'act','待跟进':'follow','已完成':'done','活跃':'act','暂停':'pause'};
+
+/* ================= 工具函数 ================= */
+function $(s){ return document.querySelector(s); }
+function toast(msg){ var t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove('show'); },2200); }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+/* ================= 视图路由 ================= */
+var VIEW_TITLES = {home:['工作台首页','今日概览'], students:['学员管理','学习进度与活跃监控'], hotspot:['热点监控','平台热点与博主动态'], profile:['个人主页','身份与入口'], tools:['工具导航','常用工具一键直达']};
+function navigate(view){
+  var hash = (location.hash||'#home').replace('#','');
+  if(!VIEW_TITLES[hash]) hash='home';
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var el=$('#view-'+hash); if(el) el.classList.add('active');
+  document.querySelectorAll('.nav a').forEach(function(a){ a.classList.toggle('active', a.getAttribute('data-view')===hash); });
+  var tt=VIEW_TITLES[hash]; $('#pageTitle').textContent=tt[0]; $('#pageSub').textContent=tt[1];
+  window.scrollTo({top:0, behavior:'auto'});
+  requestAnimationFrame(resizeCharts);
+}
+window.addEventListener('hashchange', navigate);
+
+/* ================= 图表 ================= */
+var charts = {};
+function resizeCharts(){ Object.keys(charts).forEach(function(k){ if(charts[k]) charts[k].resize(); }); }
+function makeChart(id, option){
+  if(!window.echarts){ $('#chartTrend') && ($('#chartTrend').innerHTML='<div class="chart-empty">图表库加载失败，请联网后刷新</div>'); return; }
+  var el=document.getElementById(id);
+  var c=echarts.init(el); c.setOption(option); charts[id]=c;
+}
+function initCharts(){
+  var trendOpt = {
+    tooltip:{trigger:'axis', confine:true},
+    grid:{left:8, right:16, top:30, bottom:8, containLabel:true},
+    xAxis:{type:'category', boundaryGap:false, data:['09-29','09-30','10-01','10-02','10-03','10-04','10-05'], axisLine:{lineStyle:{color:'#C9D6D1'}}, axisLabel:{color:'#5F736D', fontSize:11}},
+    yAxis:{type:'value', name:'学习时长(h)', nameTextStyle:{color:'#8CA09A', fontSize:11}, splitLine:{lineStyle:{color:'#EDF2F0'}}, axisLabel:{color:'#5F736D', fontSize:11}},
+    series:[{type:'line', smooth:true, symbolSize:6, data:[21, 25, 18, 30, 34, 28, 36], itemStyle:{color:'#B8923E'}, lineStyle:{width:2.5, color:'#B8923E'}, areaStyle:{color:'rgba(184,146,62,.10)'}, label:{show:true, position:'top', color:'#8A6A1F', fontSize:10}}]
+  };
+  var statusOpt = {
+    tooltip:{trigger:'item', confine:true},
+    legend:{bottom:0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{fontSize:11, color:'#5F736D'}},
+    series:[{type:'pie', radius:['46%','70%'], center:['50%','44%'], avoidLabelOverlap:true,
+      data:[{name:'学习中', value:58, itemStyle:{color:'#B8923E'}},{name:'已完成', value:34, itemStyle:{color:'#C9A961'}},{name:'待跟进', value:12, itemStyle:{color:'#8A8F96'}},{name:'暂停', value:8, itemStyle:{color:'#D6D3CB'}}],
+      label:{show:false}, emphasis:{label:{show:true, fontSize:12, fontWeight:700}}}]
+  };
+  var heatOpt = {
+    tooltip:{trigger:'axis', confine:true},
+    grid:{left:8, right:16, top:30, bottom:8, containLabel:true},
+    xAxis:{type:'category', data:['视频号','抖音','微博','知乎','B站'], axisLine:{lineStyle:{color:'#C9D6D1'}}, axisLabel:{color:'#5F736D', fontSize:11}},
+    yAxis:{type:'value', name:'热度指数', nameTextStyle:{color:'#8CA09A', fontSize:11}, splitLine:{lineStyle:{color:'#EDF2F0'}}, axisLabel:{color:'#5F736D', fontSize:11}},
+    series:[{type:'bar', barWidth:34, data:[{value:88,itemStyle:{color:'#B8923E'}},{value:72,itemStyle:{color:'#C9A961'}},{value:61,itemStyle:{color:'#8A6A1F'}},{value:55,itemStyle:{color:'#6B6F76'}},{value:48,itemStyle:{color:'#BFC0BC'}}], label:{show:true, position:'top', color:'#2A2D31', fontSize:10}}]
+  };
+  makeChart('chartTrend', trendOpt);
+  makeChart('chartStatus', statusOpt);
+  makeChart('chartHeat', heatOpt);
+}
+
+/* ================= 首页热点列表 ================= */
+function renderHot(plat){
+  var list = plat==='all' ? HOT_ALL : HOT_ALL.filter(function(h){ return h.plat===plat; });
+  var box=$('#hotList'); if(!box) return;
+  box.innerHTML = list.map(function(h){
+    return '<div class="hot-item"><span class="pchip '+PLAT_CLASS[h.plat]+'">'+h.plat+'</span><div class="h-title">'+esc(h.title)+'<div class="h-meta">'+esc(h.meta)+'</div></div><span class="h-heat num">'+h.heat+'</span></div>';
+  }).join('');
+}
+function initHotTabs(){
+  var box=$('#hotTabs'); if(!box) return;
+  box.addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    box.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active'); renderHot(b.getAttribute('data-plat'));
+  });
+}
+
+/* ================= 博主卡片 ================= */
+function renderBloggers(){
+  var box=$('#bloggerGrid'); if(!box) return;
+  box.innerHTML = BLOGGERS.map(function(b){
+    return '<div class="blogger"><div class="top"><span class="av" style="background:'+b.av+'">'+b.nm.charAt(0)+'</span><div><div class="nm">'+esc(b.nm)+'</div><div class="fd">'+esc(b.fd)+'</div></div></div><div class="topic">'+esc(b.topic)+'</div><div class="foot"><span class="heat num">热度 '+b.heat+'</span><a href="https://channels.weixin.qq.com/" target="_blank" rel="noopener">去视频号<svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3z"/></svg></a></div></div>';
+  }).join('');
+}
+function renderBloggerFeed(){
+  var box=$('#bloggerFeed'); if(!box) return;
+  box.innerHTML = BLOGGER_FEED.map(function(b){
+    return '<div class="row2"><span class="rank top" style="background:'+(b.nm==='张老师讲语文'?'#B8923E':'#8A8F96')+'">'+(b.nm==='张老师讲语文'?'1':'2')+'</span><div class="grow"><div class="t">'+esc(b.nm)+'：'+esc(b.topic)+'</div><div class="m">'+esc(b.fd)+' · '+esc(b.time)+' · 热度 '+b.heat+'</div></div><a class="row-op" href="https://channels.weixin.qq.com/" target="_blank" rel="noopener">查看</a></div>';
+  }).join('');
+}
+
+/* ================= 学员表格 ================= */
+function renderStudents(){
+  var f=$('#stuFilter').value, q=$('#stuSearch').value.trim();
+  var list = STUDENTS.filter(function(s){
+    return (f==='all' || s.status===f) && (q==='' || s.name.indexOf(q)>-1);
+  });
+  var body=$('#stuBody'); $('#stuCount').textContent='共 '+list.length+' 名学员';
+  if(!list.length){
+    body.innerHTML='<tr><td colspan="6" class="empty-row">没有符合条件的学员，试试调整筛选条件</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(function(s){
+    var cls = s.prog>=80 ? '' : (s.prog>=50 ? ' warn' : ' low');
+    return '<tr><td><span class="stu-name"><span class="av" style="background:'+s.color+'">'+s.name.charAt(0)+'</span>'+esc(s.name)+'</span></td><td>'+esc(s.course)+'</td><td><div class="progress'+cls+'"><i style="width:'+s.prog+'%"></i></div><div class="num" style="font-size:11px; color:var(--muted); margin-top:4px">'+s.prog+'%</div></td><td>'+s.active+'</td><td><span class="tag '+STATUS_TAG[s.status]+'">'+s.status+'</span></td><td><button class="row-op" data-demo>跟进</button></td></tr>';
+  }).join('');
+}
+function initStudents(){
+  $('#stuFilter').addEventListener('change', renderStudents);
+  $('#stuSearch').addEventListener('input', renderStudents);
+}
+
+/* ================= 全局演示反馈 ================= */
+function initDemoButtons(){
+  document.addEventListener('click', function(e){
+    var t=e.target.closest('[data-demo]');
+    if(t){ e.preventDefault(); toast('演示功能：接入真实数据源后开放'); return; }
+    var n=e.target.closest('[data-nav]');
+    if(n){ e.preventDefault(); location.hash='#'+n.getAttribute('data-nav'); }
+  });
+  var gs=$('#globalSearch');
+  gs.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ toast('搜索功能待接入真实学员数据'); gs.value=''; }
+  });
+}
+
+/* ================= 启动 ================= */
+(function init(){
+  $('#dateTag').textContent = new Date().toLocaleDateString('zh-CN', {month:'long', day:'numeric', weekday:'long'});
+  renderStudents(); initStudents();
+  renderHot('all'); initHotTabs();
+  renderBloggers(); renderBloggerFeed();
+  initDemoButtons();
+  navigate(location.hash);
+  initCharts();
+  window.addEventListener('resize', resizeCharts);
+})();
+</script>
+</body>
+</html>
